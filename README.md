@@ -68,3 +68,20 @@ node server-assignment.js
 + [Morgan](https://github.com/expressjs/morgan)
 + [body-parser](https://github.com/expressjs/body-parser)
 
+## Ex.4 node-express-generate
+
+### Objectives and Outcomes
++ Quickly scaffold out a typical Express application using express-generator
++ Build an Express server to support REST API
+
+### Usage
+```
+npm install -g express-generator
+express <appName>
+cd <appName>
+npm install
+npm start
+```
+
+### Resources
++ [Express Generator](http://expressjs.com/en/starter/generator.html)
