@@ -85,3 +85,68 @@ npm start
 
 ### Resources
 + [Express Generator](http://expressjs.com/en/starter/generator.html)
+
+
+## Ex.5 Intro to MongoDB 
+
+### Installation
+
+www.mongodb.org
+
+### Usage
+
+```
+mongod --dbpath=data
+
+=== open another terminal ===
+
+mongo
+db
+use conFusion
+db.help()
+db.dishes.insert({name:"Uthapizza", description:"Test"});
+db.find({}).pretty();
+
+var id = new ObjectId();
+id.getTimestamp();
+
+```
+
+
+
+### MongoDB Resources
+
+- [MongoDB](http://www.mongodb.org/)
+- [MongoDB documentation](http://docs.mongodb.org/manual/)
+- [MongoDB Installation](http://docs.mongodb.org/manual/installation/)
+- [The mongo Shell](http://docs.mongodb.org/manual/mongo/)
+
+## Ex.6 node-mongodb
+
+### MongoDB Driver
+
+npm module
+
+```
+npm install mongodb --save
+npm install assert --save
+```
+
+#### simpleserver
+
+connet to mongodb, insert one, find, and finally close connection.
+
+```
+node simpleserver.js
+```
+
+
+
+### MongoDB Driver Resources
+
+- [npm mongodb](https://www.npmjs.com/package/mongodb)
+- [npm assert](https://www.npmjs.com/package/assert)
+
+
+- [MongoDB Native Driver](https://github.com/mongodb/node-mongodb-native)
+- [MongoDB NodeJS Native Driver Documentation](http://mongodb.github.io/node-mongodb-native/)
