@@ -139,14 +139,15 @@ connet to mongodb, insert one, find, and finally close connection.
 ```
 node simpleserver.js
 ```
-
-
+simple demo to use mongodb module to connect db
+```
+node server.js
+```
+encapsulate db methods in operation.js
 
 ### MongoDB Driver Resources
 
 - [npm mongodb](https://www.npmjs.com/package/mongodb)
 - [npm assert](https://www.npmjs.com/package/assert)
-
-
 - [MongoDB Native Driver](https://github.com/mongodb/node-mongodb-native)
 - [MongoDB NodeJS Native Driver Documentation](http://mongodb.github.io/node-mongodb-native/)
