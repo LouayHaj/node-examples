@@ -150,3 +150,102 @@ node simpleserver.js
 
 - [MongoDB Native Driver](https://github.com/mongodb/node-mongodb-native)
 - [MongoDB NodeJS Native Driver Documentation](http://mongodb.github.io/node-mongodb-native/)
+
+
+
+## Ex.8 rest-server
+
+### Objectives and Outcomes
+
+- Develop a full-fledged REST API server with Express, MongoDB and Mongoose
+- Implement the end-to-end solution integrating Express, Node and Mongo.
+
+
+
+### Installation
+
+```
+express rest-server
+cd rest-server
+npm install
+npm install mongoose mongoose-currency --save
+```
+
+
+
+### Configuration
+
+#### app.js
+
+```javascript
+// mongoose
+var mongoose = require('mongoose');
+
+var url = 'mongodb://localhost:27017/conFusion';
+mongoose.connect(url);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Connection error:'));
+db.once('open', function() {
+  // connected
+  console.log('Connected correctly to Server');
+});
+
+```
+
+#### routes/dishRouter.js
+
+```javascript
+var mongoose = require('mongoose');
+var Dishes = require('../models/dishes.js');
+
+dishRouter.route('/')
+.get(function(req, res, next) {
+
+})
+.post(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+dishRouter.route('/:dishId')
+.get(function(req, res, next) {
+  
+})
+.put(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+
+dishRouter.route('/:dishId/comments')
+.get(function(req, res, nenxt) {
+  
+})
+.post(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+dishRouter.route('/:dishId/comments/:commentId')
+.get(function(req, res, next) {
+  
+})
+.put(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+```
+
+similar as promoRouter, leaderRouter
+
+### Resources
+
+- [Build a RESTful API Using Node and Express 4](https://scotch.io/tutorials/build-a-restful-api-using-node-and-express-4)
+- [Creating RESTful APIs With NodeJS and MongoDB Tutorial (Part II)](http://adrianmejia.com/blog/2014/10/01/creating-a-restful-api-tutorial-with-nodejs-and-mongodb/)
+- [CREATING A SIMPLE RESTFUL WEB APP WITH NODE.JS, EXPRESS, AND MONGODB](http://cwbuecheler.com/web/tutorials/2014/restful-web-app-node-express-mongodb/)
+
