@@ -250,3 +250,69 @@ similar as promoRouter, leaderRouter
 - [Creating RESTful APIs With NodeJS and MongoDB Tutorial (Part II)](http://adrianmejia.com/blog/2014/10/01/creating-a-restful-api-tutorial-with-nodejs-and-mongodb/)
 - [CREATING A SIMPLE RESTFUL WEB APP WITH NODE.JS, EXPRESS, AND MONGODB](http://cwbuecheler.com/web/tutorials/2014/restful-web-app-node-express-mongodb/)
 
+
+
+
+## Ex.9 Basic Authentication
+
+### Objectives and Outcomes
+
+- Understood the basics of user authentication
+- Used basic authentication support to authenticate users.
+
+### Not Authenticated
+
+```javascript
+var authHeader = req.headers.authorization;    
+if (!authHeader) {
+        var err = new Error('You are not authenticated!');
+        err.status = 401;
+        next(err);
+        return;
+    }
+```
+
+### check user&password
+
+```javascript
+    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+    var user = auth[0];
+    var pass = auth[1];
+    if (user == 'admin' && pass == 'password') {
+        next(); // authorized
+    } else {
+        var err = new Error('You are not authenticated!');
+        err.status = 401;
+        next(err);
+    }
+```
+
+### Middleware
+
+```javascript
+app.use(auth);
+
+...
+
+app.use(function(err,req,res,next) {
+            res.writeHead(err.status || 500, {
+            'WWW-Authenticate': 'Basic',
+            'Content-Type': 'text/plain'
+        });
+        res.end(err.message);
+});
+```
+
+### Usage
+
+```shell
+node server.js
+```
+
+visit localhost:3000 with browser
+
+### Resources
+
+- [Basic acccess authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) (Wikipedia)
+- [Basic Access Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basic_access_authentication)
+
