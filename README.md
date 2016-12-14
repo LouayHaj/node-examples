@@ -190,3 +190,167 @@ add dish.comments by dish.comments.push(), dish.save()
 ## Other Resources
 
 - [Multiple collections vs Embedded documents](http://openmymind.net/Multiple-Collections-Versus-Embedded-Documents/#1)
+
+
+## Ex.8 rest-server
+
+### Objectives and Outcomes
+
+- Develop a full-fledged REST API server with Express, MongoDB and Mongoose
+- Implement the end-to-end solution integrating Express, Node and Mongo.
+
+
+
+### Installation
+
+```
+express rest-server
+cd rest-server
+npm install
+npm install mongoose mongoose-currency --save
+```
+
+
+
+### Configuration
+
+#### app.js
+
+```javascript
+// mongoose
+var mongoose = require('mongoose');
+
+var url = 'mongodb://localhost:27017/conFusion';
+mongoose.connect(url);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Connection error:'));
+db.once('open', function() {
+  // connected
+  console.log('Connected correctly to Server');
+});
+
+```
+
+#### routes/dishRouter.js
+
+```javascript
+var mongoose = require('mongoose');
+var Dishes = require('../models/dishes.js');
+
+dishRouter.route('/')
+.get(function(req, res, next) {
+
+})
+.post(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+dishRouter.route('/:dishId')
+.get(function(req, res, next) {
+  
+})
+.put(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+
+dishRouter.route('/:dishId/comments')
+.get(function(req, res, nenxt) {
+  
+})
+.post(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+dishRouter.route('/:dishId/comments/:commentId')
+.get(function(req, res, next) {
+  
+})
+.put(function(req, res, next) {
+  
+})
+.delete(function(req, res, next) {
+  
+});
+```
+
+similar as promoRouter, leaderRouter
+
+### Resources
+
+- [Build a RESTful API Using Node and Express 4](https://scotch.io/tutorials/build-a-restful-api-using-node-and-express-4)
+- [Creating RESTful APIs With NodeJS and MongoDB Tutorial (Part II)](http://adrianmejia.com/blog/2014/10/01/creating-a-restful-api-tutorial-with-nodejs-and-mongodb/)
+- [CREATING A SIMPLE RESTFUL WEB APP WITH NODE.JS, EXPRESS, AND MONGODB](http://cwbuecheler.com/web/tutorials/2014/restful-web-app-node-express-mongodb/)
+
+
+
+
+## Ex.9 Basic Authentication
+
+### Objectives and Outcomes
+
+- Understood the basics of user authentication
+- Used basic authentication support to authenticate users.
+
+### Not Authenticated
+
+```javascript
+var authHeader = req.headers.authorization;    
+if (!authHeader) {
+        var err = new Error('You are not authenticated!');
+        err.status = 401;
+        next(err);
+        return;
+    }
+```
+
+### check user&password
+
+```javascript
+    var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
+    var user = auth[0];
+    var pass = auth[1];
+    if (user == 'admin' && pass == 'password') {
+        next(); // authorized
+    } else {
+        var err = new Error('You are not authenticated!');
+        err.status = 401;
+        next(err);
+    }
+```
+
+### Middleware
+
+```javascript
+app.use(auth);
+
+...
+
+app.use(function(err,req,res,next) {
+            res.writeHead(err.status || 500, {
+            'WWW-Authenticate': 'Basic',
+            'Content-Type': 'text/plain'
+        });
+        res.end(err.message);
+});
+```
+
+### Usage
+
+```shell
+node server.js
+```
+
+visit localhost:3000 with browser
+
+### Resources
+
+- [Basic acccess authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) (Wikipedia)
+- [Basic Access Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basic_access_authentication)
+
