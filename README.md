@@ -151,3 +151,42 @@ encapsulate db methods in operation.js
 - [npm assert](https://www.npmjs.com/package/assert)
 - [MongoDB Native Driver](https://github.com/mongodb/node-mongodb-native)
 - [MongoDB NodeJS Native Driver Documentation](http://mongodb.github.io/node-mongodb-native/)
+
+## Ex.7 node-mongoose
+
+### Installation
+```
+npm install mongoose --save
+npm install assert --save
+```
+### demo-1
+```
+node server-1.js
+```
+create dish by new Dishes(), then dish.save() method
+find dishes by Dishes.find()
+### demo-2
+```
+node server-2.js
+```
+create dish by Dishes.create()
+find dish by Dishes.findByIdAndUpdate()
+### demo-3
+```
+node server-3.js
+```
+add commentSchema in dishes-3.js 
+find dish by Dishes.findByIdAndUpdate()
+add dish.comments by dish.comments.push(), dish.save()
+
+## Mongoose Resources
+
+- [Mongoose](http://mongoosejs.com/)
+- [Mongoose Documentation](http://mongoosejs.com/docs/guide.html)
+- [Mongoose Schemas](http://mongoosejs.com/docs/guide.html)
+- [Mongoose Models](http://mongoosejs.com/docs/models.html)
+- [Mongoose Sub-documents](http://mongoosejs.com/docs/subdocs.html)
+- [Mongoose-currency](https://www.npmjs.com/package/mongoose-currency)
+## Other Resources
+
+- [Multiple collections vs Embedded documents](http://openmymind.net/Multiple-Collections-Versus-Embedded-Documents/#1)
