@@ -291,14 +291,16 @@ similar as promoRouter, leaderRouter
 
 
 
-## Ex.9 Basic Authentication
+## Ex.9 Authentication
 
-### Objectives and Outcomes
+### 1.Basic Authentication
+
+#### Objectives and Outcomes
 
 - Understood the basics of user authentication
 - Used basic authentication support to authenticate users.
 
-### Not Authenticated
+#### Not Authenticated
 
 ```javascript
 var authHeader = req.headers.authorization;    
@@ -310,7 +312,7 @@ if (!authHeader) {
     }
 ```
 
-### check user&password
+#### check user&password
 
 ```javascript
     var auth = new Buffer(authHeader.split(' ')[1], 'base64').toString().split(':');
@@ -325,7 +327,7 @@ if (!authHeader) {
     }
 ```
 
-### Error handle Middleware
+#### Error handle Middleware
 
 ```javascript
 app.use(auth);
@@ -341,7 +343,7 @@ app.use(function(err,req,res,next) {
 });
 ```
 
-### Usage
+#### Usage
 
 ```shell
 // basic-auth
@@ -350,26 +352,26 @@ node server.js
 
 visit localhost:3000 with browser
 
-### Resources
+#### Resources
 
 - [Basic acccess authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) (Wikipedia)
 - [Basic Access Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basic_access_authentication)
 
 
-## Ex.10 Cookies & Sessions
+### 2. Authentication with Cookies
 
-### Objectives and outcomes
+#### Objectives and outcomes
 
 - Set up your Express application to send signed cookies.
 - Set up your Express application to parse the cookies in the header of the incoming request messages
 
-### Installation
+#### Installation
 
 ```shell
 npm install cookie-parser --save
 ```
 
-### Secret key
+#### Secret key
 
 ```javascript
 var cookieParser = require('cookie-parser');
@@ -378,7 +380,7 @@ var cookieParser = require('cookie-parser');
 app.use(cookieParser('12345-67890-09876-54321'));
 ```
 
-### First/Subsequent Authentication
+#### First/Subsequent Authentication
 
 ```javascript
 function auth(req, res, next) {
@@ -405,10 +407,74 @@ function auth(req, res, next) {
 }
 ```
 
-### Usage
+#### Usage
 
 ```shell
 // basic-auth
 node server-2.js
 ```
 
+### 3. Authentication with Express Sessions
+
+#### Objectives and Outcomes
+
+- Set up your Express server to use Express sessions to track authenticated users
+- Enable clients to access secure resources on the server after authentication.
+
+#### Installation
+
+```shell
+npm install express-session session-file-store --save
+```
+
+#### Configuration
+
+```javascript
+var session = require('express-session');
+var FileStore = require('session-file-store')(session);
+
+...
+
+app.use(session({
+  name: 'session-id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized: true,
+  resave: true,
+  store: new FileStroe()
+}));
+```
+
+#### First/Subsequent Authentication
+
+```javascript
+function auth(req, res, next) {
+  if (!req.session.user) {
+    // First Authentication
+    if (user === 'admin' && pass === 'password') {
+      // authorized
+      req.session.user = 'admin';
+      next();
+    }
+  } else {
+    // Subsequent Authentication
+    if (req.session.user === 'admin') {
+      next();
+    } else {
+      var err = new Error('Not Authenticated!');
+      err.status = 401;
+      next(err);
+    }
+  }
+}
+```
+
+#### Usage
+
+```shell
+// basic-auth
+node server-3.js
+```
+
+#### Local Session Store
+
+With session-file-store, the session files now saved in basic_folder/session
