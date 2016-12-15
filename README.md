@@ -414,6 +414,11 @@ function auth(req, res, next) {
 node server-2.js
 ```
 
+#### Cookie Resources
+
+- [cookie-parser](https://github.com/expressjs/cookie-parser)
+- [HTTP Cookies](https://en.wikipedia.org/wiki/HTTP_cookie)
+
 ### 3. Authentication with Express Sessions
 
 #### Objectives and Outcomes
@@ -478,3 +483,11 @@ node server-3.js
 #### Local Session Store
 
 With session-file-store, the session files now saved in basic_folder/session
+
+#### Exrepss Session Resources
+
+- [express-session](https://github.com/expressjs/session)
+- [session-file-store](https://www.npmjs.com/package/session-file-store)
+- [Sessions in Express.js](http://expressjs-book.com/index.html%3Fp=128.html)
+- [Express Session Management](http://www.javabeat.net/expressjs-session-management/)
+
