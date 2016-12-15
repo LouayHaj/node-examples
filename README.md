@@ -325,7 +325,7 @@ if (!authHeader) {
     }
 ```
 
-### Middleware
+### Error handle Middleware
 
 ```javascript
 app.use(auth);
@@ -344,6 +344,7 @@ app.use(function(err,req,res,next) {
 ### Usage
 
 ```shell
+// basic-auth
 node server.js
 ```
 
@@ -353,4 +354,61 @@ visit localhost:3000 with browser
 
 - [Basic acccess authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) (Wikipedia)
 - [Basic Access Authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basic_access_authentication)
+
+
+## Ex.10 Cookies & Sessions
+
+### Objectives and outcomes
+
+- Set up your Express application to send signed cookies.
+- Set up your Express application to parse the cookies in the header of the incoming request messages
+
+### Installation
+
+```shell
+npm install cookie-parser --save
+```
+
+### Secret key
+
+```javascript
+var cookieParser = require('cookie-parser');
+...
+
+app.use(cookieParser('12345-67890-09876-54321'));
+```
+
+### First/Subsequent Authentication
+
+```javascript
+function auth(req, res, next) {
+  
+  if (!req.signedCookies.user) {
+    ... // First Authentication
+    if (user === 'admin' && pass ==='password') {
+      // authorized
+      res.cookie('user', 'admin', {signed: true});
+      next();
+    } else {
+      ...
+    }
+  } else {
+    // Subsequent Authentication
+    if (req.signedCookies.user === 'admin') {
+      next();
+    } else {
+      var err = new Error('Not Authenticated!');
+      err.status = 401;
+      next(err);
+    }
+  }
+}
+```
+
+### Usage
+
+```shell
+// basic-auth
+node server-2.js
+```
 
