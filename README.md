@@ -491,3 +491,236 @@ With session-file-store, the session files now saved in basic_folder/session
 - [Sessions in Express.js](http://expressjs-book.com/index.html%3Fp=128.html)
 - [Express Session Management](http://www.javabeat.net/expressjs-session-management/)
 
+
+### 4. Token-based Authentication - Passport module
+
+#### Installation
+
+```shell
+npm install passport passport-local mongoose passport-local-mongoose --save
+```
+
+#### ./config.js
+
+```javascript
+module.exports = {
+  'mongodbUrl': 'mongodb://localhost:27017/conFusion',
+  'secretKey': '12345-67890-09876-54321'
+}
+```
+
+#### ./app.js
+
+```javascript
+// configuration
+var config = require('./config.js');
+// mongoose
+var mongoose = require('mongoose');
+// passport
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+
+...
+mongoose.connect(config.mongodbUrl);
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'Connection error:'));
+db.once('open', function() {
+  // connected
+  console.log('Connected correctly to Server');
+});
+
+...
+// passport config
+var User = require('./models/user.js');
+app.use(passport.initialize());
+// passport.use(new LocalStrategy(User.authenticate()));
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+```
+
+#### ./models/user.js
+
+Model of Website Accounts
+
+```javascript
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
+var passportLocalMongoose = require('passport-local-mongoose');
+
+var User = new Schema({
+  username: String,
+  password: String,
+  admin: {
+    type: Boolean,
+    default: false
+  }
+});
+
+User.plugin(passportLocalMongoose);
+
+module.exports = mongoose.model('User', User);
+```
+
+#### ./routes/users.js
+
+Router for /users path
+
+```javascript
+var express = require('express');
+var router = express.Router();
+
+var passport = require('passport');
+var User = require('../models/user');
+var Verify = require('./verify');
+
+...
+
+module.exports = router;
+```
+
+
+
+POST /users/register for registration
+
+```javascript
+router.post('/register', function(req, res, next) {
+  User.register(new User({username: req.body.username}), req.body.password, function(err, user) {
+    if (err) {
+      return res.status(500).json({err: err});
+    }
+    passport.authenticate('local')(req, res, function() {
+      // res.redirect('/');
+      return res.status(200).json({status:'Register Success'});
+    });
+  });
+});
+```
+
+
+
+POST /users/login for user login
+
+```javascript
+router.post('/login', function(req, res, next) {
+  passport.authenticate('local', function(err, user, info) {
+    if (err) {
+      return next(err);
+    }
+    if (!user) {
+      return res.status(401).json({err: info});
+    }
+    req.logIn(user, function(err) {
+      if (err) {
+        return res.status(500).json({err: 'Could not log in'});
+      }
+      var token = Verify.getToken(user);
+      return res.status(200).json({status: 'Login Success', token: token});
+    })
+  })(req, res, next);
+});
+```
+
+
+
+GET /users/logout for user logout
+
+```javascript
+router.get('/logout', function(req, res, next) {
+  req.logout();
+  res.status(200).json({status:'bye'});
+});
+```
+
+
+
+#### ./routes/verify.js
+
+Verify users with jsonwebtoken
+
+getToken for signing user to token
+
+```javascript
+var jwt = require('jsonwebtoken');
+var config = require('../config');
+
+exports.getToken = function(user) {
+  return jwt.sign(user, config.sercetKey, {
+    expiresIn: 3600
+  });
+};
+```
+
+verifyOridinaryUser for pre-check token to specified routers
+
+```javascript
+exports.verifyOrdinaryUser = function(req, res, next) {
+  var token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+  if (token) {
+    // decode token
+    jwt.verify(token, config.sercetKey, function(err, decoded) {
+      if (err) {
+        var err = new Error('Not Authenticated');
+        err.status = 401;
+        return next(err);
+      }
+      req.decoded = decoded;
+      next();
+    });
+  } else {
+    // no token
+    var err = new Error('No token provided');
+    err.status = 403;
+    return next(err);
+  }
+}
+```
+
+#### ./routes/dishRouter.js
+
+```javascript
+var Verify = require('./verify');
+
+dishRouter.route('/')
+.get(Verify.verifyOrdinaryUser, function (req, res, next) {
+
+   . . .
+
+})
+
+.post(Verify.verifyOrdinaryUser, function (req, res, next) {
+
+   . . .
+
+})
+
+.delete(Verify.verifyOrdinaryUser, function (req, res, next) {
+
+   . . .
+
+});
+```
+
+### Passport Resources
+
+- [Passport](http://passportjs.org/)
+- [Passport Documentation](http://passportjs.org/docs)
+- [Passport-local](https://github.com/jaredhanson/passport-local)
+- [Passport-local-mongoose](https://github.com/saintedlama/passport-local-mongoose)
+
+### JSON Web Tokens Resources
+
+- [JSON Web Tokens](https://jwt.io/)
+- [RFC 7519 (JSON Web Tokens)](https://tools.ietf.org/html/rfc7519)
+- [jsonwebtoken (Node Module)](https://github.com/auth0/node-jsonwebtoken)
+
+### Other Resources
+
+- [User Authentication With Passport and Express 4](http://mherman.org/blog/2015/01/31/local-authentication-with-passport-and-express-4/#.VteGlYx96Aw)
+- [Authenticate a Node.js API with JSON Web Tokens](https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens)
+- [Using JSON Web Tokens with Node.js](http://www.sitepoint.com/using-json-web-tokens-node-js/)
+- [Token Based Authentication for Single Page Apps (SPAs)](https://stormpath.com/blog/token-auth-spa/)
+- [The Ins and Outs of Token Based Authentication](https://scotch.io/tutorials/the-ins-and-outs-of-token-based-authentication)
+- [The Anatomy of a JSON Web Token](https://scotch.io/tutorials/the-anatomy-of-a-json-web-token)
+
