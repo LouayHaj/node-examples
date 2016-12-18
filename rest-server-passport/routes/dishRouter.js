@@ -20,11 +20,13 @@ dishRouter.route('/')
 
 .get(Verify.verifyOrdinaryUser, function(req, res, next) {
   // res.end('Will send all dishes');
-  Dishes.find({}, function(err, dishes) {
+  Dishes.find({})
+  .populate('comments.postBy')
+  .exec(function(err, dishes) {
     if (err) throw err;
     // res.json() method automatically handle the HTTP status code and ContentType set to application/json
     res.json(dishes); 
-  })
+  });
 })
 
 .post(Verify.verifyOrdinaryUser, Verify.verifyAdmin, function(req, res, next) {
@@ -60,7 +62,9 @@ dishRouter.route('/:id')
 
 .get(Verify.verifyOrdinaryUser, function(req, res, next) {
   // res.end('get dish: ' + req.params.id);
-  Dishes.findById(req.params.id, function(err, dish) {
+  Dishes.findById(req.params.id)
+  .populate('comments.postBy')
+  .exec(function(err, dish) {
     if (err) throw err;
     res.json(dish);
   });
@@ -88,8 +92,12 @@ dishRouter.route('/:id')
 });
 
 dishRouter.route('/:id/comments')
+.all(Verify.verifyOrdinaryUser)
+
 .get(function(req, res, next) {
-  Dishes.findById(req.params.id, function(err, dish) {
+  Dishes.findById(req.params.id)
+  .populate('comments.postBy')
+  .exec(function(err, dish) {
     if (err) throw err;
     res.json(dish.comments);
   });
@@ -98,6 +106,7 @@ dishRouter.route('/:id/comments')
 .post(function(req, res, next) {
   Dishes.findById(req.params.id, function(err, dish) {
     if (err) throw err;
+    req.body.postBy = req.decoded._doc._id;
     dish.comments.push(req.body);
     dish.save(function(err, dish) {
       if (err) throw err;
@@ -107,7 +116,7 @@ dishRouter.route('/:id/comments')
   })
 })
 
-.delete(function(req, res, next) {
+.delete(Verify.verifyAdmin, function(req, res, next) {
   Dishes.findById(req.params.id, function(err, dish) {
     if (err) throw err;
 
@@ -124,8 +133,12 @@ dishRouter.route('/:id/comments')
 });
 
 dishRouter.route('/:dishId/comments/:commentId')
+.all(Verify.verifyOrdinaryUser)
+
 .get(function(req, res, next) {
-  Dishes.findById(req.params.dishId, function(err, dish) {
+  Dishes.findById(req.params.dishId)
+  .populate('comments.postBy')
+  .exec(function(err, dish) {
     if (err) throw err;
     res.json(dish.comments.id(req.params.commentId));
   });
@@ -135,6 +148,7 @@ dishRouter.route('/:dishId/comments/:commentId')
   Dishes.findById(req.params.dishId, function(err, dish) {
     if (err) throw err;
     dish.comments.id(req.params.commentId).remove();
+    req.body.postBy = req.decoded._doc._id;
     dish.comments.push(req.body);
     dish.save(function(err, dish) {
       if (err) throw err;
@@ -147,6 +161,11 @@ dishRouter.route('/:dishId/comments/:commentId')
 .delete(function(req, res, next) {
   Dishes.findById(req.params.dishId, function(err, dish) {
     if (err) throw err;
+    if (dish.comments.id(req.params.commentId).postBy != req.decoded._doc._id) {
+      var err = new Error('NOT authenticated!');
+      err.status = 403;
+      return next(err);
+    }
     dish.comments.id(req.params.commentId).remove();
     dish.save(function(err, resp) {
       if (err) throw err;

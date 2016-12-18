@@ -724,3 +724,89 @@ dishRouter.route('/')
 - [The Ins and Outs of Token Based Authentication](https://scotch.io/tutorials/the-ins-and-outs-of-token-based-authentication)
 - [The Anatomy of a JSON Web Token](https://scotch.io/tutorials/the-anatomy-of-a-json-web-token)
 
+
+## Ex.10 Mongoose Population
+
+- Use Mongoose population to cross-reference users within a comment
+- Populate the comments with the users’ information upon querying
+
+### Usage
+
+```shell
+// rest-server-passport
+npm start
+```
+
+### ./models/dishes.js
+
+```javascript
+var commentSchema = new Schema({
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5,
+    required: true
+  },
+  comment: {
+    type: String,
+    required: true
+  },
+  postBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
+}, {
+  timestamps: true
+});
+```
+
+### ./routes/dishRouter.js
+
+```javascript
+// '/'
+.get(Verify.verifyOrdinaryUser, function (req, res, next) {
+    Dishes.find({})
+        .populate('comments.postedBy')
+        .exec(function (err, dish) {
+        if (err) throw err;
+        res.json(dish);
+    });
+})
+
+// '/:dishId/comments'
+.post(function (req, res, next) {
+    Dishes.findById(req.params.dishId, function (err, dish) {
+        if (err) throw err;
+        req.body.postedBy = req.decoded._doc._id;
+        dish.comments.push(req.body);
+        dish.save(function (err, dish) {
+            if (err) throw err;
+            console.log('Updated Comments!');
+            res.json(dish);
+        });
+    });
+})
+
+// '/:dishId/commnets/:commentId'
+.get(function (req, res, next) {
+    Dishes.findById(req.params.dishId)
+        .populate('comments.postedBy')
+        .exec(function (err, dish) {
+        if (err) throw err;
+        res.json(dish.comments.id(req.params.commentId));
+    });
+})
+```
+
+
+
+### Mongoose Resources
+
+- [Mongoose Population](http://mongoosejs.com/docs/populate.html)
+
+### Other Resources
+
+- [Mongoose: Referencing schema in properties or arrays](https://alexanderzeitler.com/articles/mongoose-referencing-schema-in-properties-and-arrays/)
+
+
+

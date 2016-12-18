@@ -20,9 +20,17 @@ router.post('/register', function(req, res, next) {
     if (err) {
       return res.status(500).json({err: err});
     }
-    passport.authenticate('local')(req, res, function() {
-      // res.redirect('/');
-      return res.status(200).json({status:'Register Success'});
+    if (req.body.lastname) {
+      user.lastname = req.body.lastname;
+    }
+    if (req.body.firstname) {
+      user.firstname = req.body.firstname;
+    }
+    user.save(function(err, user) {
+      passport.authenticate('local')(req, res, function() {
+        // res.redirect('/');
+        return res.status(200).json({status:'Register Success'});
+      });
     });
   });
 });
