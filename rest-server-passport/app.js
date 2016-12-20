@@ -31,6 +31,14 @@ db.once('open', function() {
 
 var app = express();
 
+app.all('*', function(req, res, next) {
+  if (req.secure) {
+    next();
+  } else {
+    res.redirect('https://' + req.hostname + ':' + app.get('secuPort') + req.url);
+  }
+});
+
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');

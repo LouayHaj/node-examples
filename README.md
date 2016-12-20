@@ -810,3 +810,118 @@ var commentSchema = new Schema({
 
 
 
+
+## Ex.11 HTTPS and Secure communication
+
+### Objectives and Outcomes
+
+- Configure a secure server in Node using the core HTTPS module
+- Generate the private key and public certificate and configure the HTTPS server
+- Redirect traffic from the insecure HTTP server to a secure HTTPS server.
+
+### Generate Self-signed keys
+
+```shell
+// rest-server-passport/bin
+openssl genrsa 1024 > private.key
+openssl req -new -key private.key -out cert.csr
+openssl x509 -req -in cert.csr -signkey private.key -out certificate.pem
+```
+
+#### Note for Windows Users
+
+- If you are using a Windows machine, you may need to install openssl. You can find some openssl binary distributions [here](https://wiki.openssl.org/index.php/Binaries). Also, [this article](http://blog.didierstevens.com/2015/03/30/howto-make-your-own-cert-with-openssl-on-windows/) gives the steps for generating the certificates in Windows. Another [article](http://www.faqforge.com/windows/use-openssl-on-windows/) provides similar instructions. Here's an [online](http://www.selfsignedcertificate.com/) service to generate self-signed certificates.
+- Run the server and test.
+
+### Create HTTPS server
+
+```javascript
+// rest-server-passport/bin/www
+
+/**
+ * Module dependencies.
+ */
+
+var app = require('../app');
+var debug = require('debug')('rest-server:server');
+var http = require('http');
+var https = require('https');
+var fs = require('fs');
+
+/**
+ * Get port from environment and store in Express.
+ */
+var port = normalizePort(process.env.PORT || '3000');
+app.set('port', port);
+app.set('secuPort', port + 443);
+
+/**
+ * Create HTTPS server
+ */
+
+var options = {
+  key: fs.readFileSync(__dirname + '/private.key'),
+  cert: fs.readFileSync(__dirname + '/certificate.pem')
+};
+
+var secureServer = https.createServer(options, app);
+
+/**
+ * Listening on provided port, on all network interfaces
+ */
+
+secureServer.listen(app.get('secuPort'), function() {
+  console.log('Secure Server listening on ', app.get('secuPort'));
+});
+secureServer.on('error', onError);
+secureServer.on('listening', onListening);
+```
+
+### Redirect to secure path to ensure all secure traffic
+
+```javascript
+// rest-server-passport/app.js
+
+// Secure traffic only
+app.all('*', function(req, res, next) {
+  if (req.secure) {
+    next();
+  } else {
+    res.redirect('https://' + req.hostname + ':' + app.get('secuPort') + req.url);
+  }
+});
+```
+
+### Usage
+
+```shell
+// rest-server-passport
+npm start
+```
+
+Open browser, visit http://localhost:3000 redirect to https://localhost:3443
+
+### Resources
+
+#### HTTPS
+
+- [HTTPS (Wikipedia)](https://en.wikipedia.org/wiki/HTTPS)
+- [Public Key Cryptography](https://en.wikipedia.org/wiki/Public-key_cryptography)
+- [Transport Layer Security](https://en.wikipedia.org/wiki/Transport_Layer_Security)
+
+#### Node's HTTPS Server
+
+- [Node HTTPS Server](https://nodejs.org/api/https.html)
+
+#### Book
+
+- [Kurose, James F., and Keith W. Ross. Computer networking: a top-down approach. Pearson, 2017, ISBN-10: 0134522206 • ISBN-13: 9780134522203.](http://www.pearsonhighered.com/educator/product/Computer-Networking-A-Top-Down-Approach-Plus-Modified-MasteringEngineering-with-Pearson-eText-Access-Card-Package-7E/9780134522203.page)
+
+#### Other Resources
+
+- [Howto: Make Your Own Cert With OpenSSL on Windows](http://blog.didierstevens.com/2015/03/30/howto-make-your-own-cert-with-openssl-on-windows/)
+- [OpenSSL for Windows](https://wiki.openssl.org/index.php/Binaries)
+- [How to Use SSL/TLS with Node.js](http://www.sitepoint.com/how-to-use-ssltls-with-node-js/)
+- [Adding HTTPS (SSL) to Express 4.X Applications](http://blog.ayanray.com/2015/06/adding-https-ssl-to-express-4-x-applications/)
+- [How does HTTPS actually work?](http://robertheaton.com/2014/03/27/how-does-https-actually-work/)
+
