@@ -3,6 +3,9 @@
 *.csr
 *.pem
 
+# fackbook Oauth
+*.fbConf.js
+
 # Created by https://www.gitignore.io/api/webstorm,node,bower,macos
 
 ### WebStorm ###
