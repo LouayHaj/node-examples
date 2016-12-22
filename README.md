@@ -925,3 +925,159 @@ Open browser, visit http://localhost:3000 redirect to https://localhost:3443
 - [Adding HTTPS (SSL) to Express 4.X Applications](http://blog.ayanray.com/2015/06/adding-https-ssl-to-express-4-x-applications/)
 - [How does HTTPS actually work?](http://robertheaton.com/2014/03/27/how-does-https-actually-work/)
 
+
+## Ex12. OAuth Authentication
+
+rest-server-passport-oauth fork from rest-server-passport
+
+### Installation
+
+```shell
+npm install passport-facebook --save
+```
+
+### Configuration
+
+Combine with all passport configuration to one file authenticate.js
+
+```javascript
+// ./authenticate.js
+var passport = require('passport');
+var LocalStrategy = require('passport-local').Strategy;
+var User = require('./models/user.js');
+// register facebook developer, create and fulfill fbConf.js as fbConf-demo.js
+var fbConf = require('./fbConf');
+var FacebookStrategy = require('passport-facebook').Strategy;
+
+// passport.use(new LocalStrategy(User.authenticate()));
+
+// local strategy
+exports.local = passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+// facebook oauth
+exports.facebook = passport.use(new FacebookStrategy({
+  clientID: fbConf.facebook.appId,
+  clientSecret: fbConf.facebook.appSecret,
+  callbackURL: fbConf.facebook.appCallback
+}, function(accessToken, refreshToken, profile, done) {
+  User.findOne({
+    OauthId: profile.id
+  }, function(err, user) {
+    if (err) {
+      throw err;
+    }
+    if (!err && user !== null) {
+      // current Oauth user exists
+      done(null, user);
+    } else {
+      // Oauth complete, create local user
+      user = new User({
+        username: profile.id
+      });
+      user.OauthId = profile.id;
+      user.OauthToken = profile.accessToken;
+      user.save(function(err, user) {
+        if (err) throw err;
+        console.log('Oauth User created');
+        done(null, user);
+      });
+
+    }
+  });
+}));
+```
+
+```javascript
+// .app.js
+// passport
+var passport = require('passport');
+// var LocalStrategy = require('passport-local').Strategy;
+var authenticate = require('./authenticate');
+
+...
+
+app.use(passport.initialize());
+```
+
+### Subtles in User model
+
+```javascript
+// ./model/user.js
+
+var User = new Schema({
+  ...
+  OauthId: String,
+  OauthToken: String,
+  ...
+});
+```
+
+### /users Router
+
+```javascript
+// ./routes/users.js
+
+// facebook Oauth entry
+router.get('/facebook', passport.authenticate('facebook'), function(req, res) {});
+
+// facebook Oauth callback
+router.get('/facebook/callback', function(req, res, next) {
+  passport.authenticate('facebook', function(err, user, info) {
+    if (err) return next(err);
+    if (!user) {
+      return res.status(401).json({
+        err: info
+      });
+    }
+    req.logIn(user, function(err) {
+      if (err) {
+        return res.status(500).json({
+          err: 'Could not log in user'
+        });
+      }
+      var token = Verify.getToken(user);
+      res.status(200).json({
+        status:'Login Success',
+        success: true,
+        token: token
+      });
+    });
+  })(req, res, next);
+});
+```
+
+### Usage
+
+### Registering your app on Facebook
+
+- Go to [https://developers.facebook.com/apps/](http://developers.facebook.com/apps/) and register your app by following the instructions there and obtain your App ID and App Secret, and then update config.js with the information.
+- Start your server and test your application. You can log in using Facebook by accessing [https://localhost:3443/users/facebook](https://localhost:3443/users/facebook) which will redirect you to Facebook for authentication and return to your server.
+
+### Resources
+
+#### OAuth Resources
+
+- [OAuth 2.0](http://oauth.net/2/)
+- [OAuth](http://oauth.net/)
+- [OAuth (Wikipedia)](https://en.wikipedia.org/wiki/OAuth)
+
+#### Facebook Resources
+
+- [https://developers.facebook.com/apps/](https://developers.facebook.com/apps/)
+
+#### Passport Resources
+
+- [passport-facebook](https://github.com/jaredhanson/passport-facebook)
+- [passport-google-oauth](https://github.com/jaredhanson/passport-google-oauth)
+- [passport-twitter](https://github.com/jaredhanson/passport-twitter)
+
+#### Other Resources
+
+- [Social Authentication With Passport.js](http://mherman.org/blog/2013/11/10/social-authentication-with-passport-dot-js/#.Vua24dV94UE)
+- [Easy Node Authentication: Facebook](https://scotch.io/tutorials/easy-node-authentication-facebook)
+- [An Introduction to OAuth 2](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2)
+- [Understanding OAuth2](http://www.bubblecode.net/en/2016/01/22/understanding-oauth2/)
+- [The OAuth Bible](http://oauthbible.com/)
+
