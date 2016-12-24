@@ -1,3 +1,5 @@
+
+
 # Node-Examples
 
 Coursera: Server-side Development with NodeJS
@@ -1080,4 +1082,321 @@ router.get('/facebook/callback', function(req, res, next) {
 - [An Introduction to OAuth 2](https://www.digitalocean.com/community/tutorials/an-introduction-to-oauth-2)
 - [Understanding OAuth2](http://www.bubblecode.net/en/2016/01/22/understanding-oauth2/)
 - [The OAuth Bible](http://oauthbible.com/)
+
+
+## Ex13. BaaS - Loopback
+
+### 1.starter
+
+- Use Loopback to quickly scaffold out a server-side application
+- Use Loopback to define a model and automatically let it construct the corresponding REST API
+
+#### Installation
+
+```shell
+npm install strongloop -g
+```
+
+#### Scaffold out
+
+```shell
+slc loopback
+```
+
+loopback-server
+
+api-server
+
+```shell
+cd loopback-server
+
+slc loopback:model
+```
+
+dishes
+
+db(memory)
+
+PersistedModel
+
+REST yes
+
+common
+
+name/description/category/image/label/price
+
+```shell
+node .
+
+//visit localhost:3000/explorer
+```
+
+### 2.data sources and access control
+
+- Define data sources to be used by your Loopback server
+- Set up access controls to various REST API end points.
+
+#### Data sources
+
+```shell
+slc loopback:datasource
+```
+
+```shell
+     Data Source Name: MongoDB
+     Connector: Mongo DB connector
+     Host: localhost
+     Port: 27017
+     username & password: (empty)
+     Database Name: conFusion   
+```
+
+- Open *model-config.json* file in the *server* subfolder of the *loopback-server* folder, and set the data source for *dishes*, *Role*, *RoleMapping* and ACL as MongoDB.
+
+#### Access Control
+
+```shell
+slc loopback:acl
+```
+
+```shell
+     (all existing models)
+     All methods and properties
+     All (match all types)
+     All users
+     Explicitly deny access
+```
+
+```shell
+     (all existing models)
+     All methods and properties
+     Read
+     Any authenticated users
+     Explicitly grant access
+```
+
+```shell
+     dishes
+     A single method
+     create
+     Other users
+     role: admin
+     Explicitly grant access
+```
+
+```javascript
+// loopback-server/server/boot/script.js
+module.exports = function(app) {
+var MongoDB = app.dataSources.MongoDB;
+
+MongoDB.automigrate('Customer', function(err) {
+   if (err) throw (err);
+   var Customer = app.models.Customer;
+
+   Customer.create([
+    {username: 'Admin', email: 'admin@admin.com', password: 'abcdef'},
+    {username: 'muppala', email: 'muppala@ust.hk', password: 'abcdef'}
+  ], function(err, users) {
+    if (err) throw (err);
+     var Role = app.models.Role;
+    var RoleMapping = app.models.RoleMapping;
+
+    //create the admin role
+    Role.create({
+      name: 'admin'
+    }, function(err, role) {
+      if (err) throw (err);
+       //make admin
+      role.principals.create({
+        principalType: RoleMapping.USER,
+        principalId: users[0].id
+      }, function(err, principal) {
+        if (err) throw (err);
+      });
+    });
+  });
+});
+
+};
+```
+
+### 3. Loopback - Relations
+
+- Define model relations among various Loopback models
+- Make use of a mixin within the Loopback server
+
+#### Add Comments Model
+
+```shell
+slc loopback:model
+```
+
+```shell
+     Model Name: Comments
+     Data Source: MongoDB
+     Model base: Persisted Model
+     Expose REST API: Yes
+     Model folder: common
+     Properties:
+       Name: Rating
+       Type: number
+       Required: Yes
+       Default: 5
+       Name: comment
+       Type: String
+       Required: Yes
+       Default: (empty)
+```
+
+#### Setting up Model Relations
+
+```shell
+slc loopback:relation
+```
+
+ First the relation between dishes and Comments
+
+```shell
+     Model: dishes
+     Relation type: has many
+     Relationship with: Comments
+     Name: comments
+     Foreign key: none
+     Through model: no
+```
+
+relation between dishes and customers
+
+     Model: dishes
+     Relation type: has many
+     Relationship with: Customer
+     Name: customers
+     Foreign key: none
+     Through model: no
+Between Comments and Dishes
+
+```shell
+     Model: Comments
+     Relation type: belongs to
+     Relationship with: dishes
+     Name: dishes
+     Foreign key: none
+```
+
+Between Comments and Customer
+
+```shell
+     Model: Comments
+     Relation type: belongs to
+     Relationship with: Customer
+     Name: customer
+     Foreign key: customerId
+```
+
+Between Customer and Comments
+
+```shell
+     Model: Customer
+     Relation type: has many
+     Relationship with: Comment
+     Name: comments
+     Foreign key: customerId
+     Require through model: no
+```
+
+#### Define and Use a Mixin
+
+```shell
+npm install loopback-ds-timestamp-mixin --save
+```
+
+```javascript
+// /loopback-server/server/model-config.json
+    "mixins": [
+      "loopback/common/mixins",
+      "loopback/server/mixins",
+      "../node_modules/loopback-ds-timestamp-mixin",
+      "../common/mixins",
+      "./mixins"
+    ]
+```
+
+add following code to both comments.json and dishes.json in common folder
+
+```javascript
+  "mixins": {
+    "TimeStamp": true
+  },
+```
+
+#### Configuring Access Control
+
+```shell
+slc loopback:acl
+```
+
+Dish model
+
+```shell
+     Model: dishes
+     Scope: All methods and properties
+     access type: Write
+     role: other
+     role name: admin
+     Permission: Explicitly grant access
+```
+
+Comments model
+
+```shell
+     Model: Comments
+     Scope: All methods and properties
+     access type: All
+     role: All users
+     Permission: Explicitly deny access
+```
+
+```shell
+     Model: Comments
+     Scope: All methods and properties
+     access type: Read
+     role: Any authenticated user
+     Permission: Explicitly grant access
+```
+
+```shell
+     Model: Comments
+     Scope: A single method
+     method name: create
+     role: Any authenticated user
+     Permission: Explicitly grant access
+```
+
+```shell
+     Model: Comments
+     Scope: All methods and properties
+     access type: Write
+     role: The user owning the object
+     Permission: Explicitly grant access
+```
+
+Filter parameter: {"include":["dishes","customer"]}
+
+This works like mongoose population
+
+### Resources
+
+Loopback Resources
+
+- [Loopback.io](http://loopback.io/)
+- [Loopback Documentation](http://docs.strongloop.com/)
+
+Other Resources
+
+- [Mobile     Backend as a Service (Wikipedia)](https://en.wikipedia.org/wiki/Mobile_backend_as_a_service)
+- [Backend as     a Service](http://baas.apievangelist.com/)
+- [Mobile     Backend-as-a-Service (MBaaS) - Options and Alternatives](http://www.thbs.com/blog/mobile-backend-as-a-service-mbaas-options-and-alternatives)
+- [MBaaS     shoot-out: 5 clouds for building mobile apps](http://www.infoworld.com/article/2842791/application-development/mbaas-shoot-out-5-cloud-platforms-for-building-mobile-apps.html)
+- [HOW TO     CHOOSE THE RIGHT BACKEND AS A SERVICE (BAAS) PLATFORM](http://waracle.net/how-to-choose-the-right-backend-as-a-service-baas-platform/)
+- [Let     LoopBack Do It: A Walkthrough of the Node API Framework You've Been     Dreaming Of](https://www.toptal.com/nodejs/let-loopback-do-it-a-walkthrough-of-the-node-api-framework-you-ve-been-dreaming-of)
 
