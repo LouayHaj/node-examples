@@ -8,6 +8,7 @@ var bodyParser = require('body-parser');
 // routes
 var index = require('./routes/index');
 var users = require('./routes/users');
+var favoriteRouter = require('./routes/favoriteRouter');
 
 var dishRouter = require('./routes/dishRouter');
 var promoRouter = require('./routes/promoRouter');
@@ -62,6 +63,7 @@ app.use(passport.initialize());
 
 app.use('/', index);
 app.use('/users', users);
+app.use('/favorites', favoriteRouter);
 
 app.use('/dishes', dishRouter);
 app.use('/promotions', promoRouter);
