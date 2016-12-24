@@ -6,6 +6,9 @@
 # fackbook Oauth
 fbConf.js
 
+# vscode configure
+.vscode/
+
 # Created by https://www.gitignore.io/api/webstorm,node,bower,macos
 
 ### WebStorm ###
