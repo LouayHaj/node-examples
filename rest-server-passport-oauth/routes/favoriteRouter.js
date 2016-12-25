@@ -15,10 +15,9 @@ router.route('/')
 
 .get(function(req, res, next) {
   Favorite.findOne({
-    user: req.decoded._doc._id
+    postedBy: req.decoded._doc._id
   })
-  .populate('user')
-  .populate('favList.dish')
+  .populate('postBy dishes')
   .exec(function(err, favorite) {
     if (err) {
       return next(err);
@@ -28,55 +27,25 @@ router.route('/')
 })
 
 .post(function(req, res, next) {
-  Favorite.findOne({
-    user: req.decoded._doc._id
+  Favorite.findOneAndUpdate({
+    postedBy: req.decoded._doc._id
+  }, {
+    $addToSet: {
+      dishes: req.body
+    }
+  }, {
+    upsert: true,
+    new: true
   }, function(err, favorite) {
     if (err) throw err;
-    // req.body._id -> dish object id required
-    if (!req.body._id) {
-      var nerr = new Error('dish object id not provided');
-      nerr.status = 500
-      return next(nerr);
-    }
-    // validate dishId exists
-    // check user's favorites exists or not
-    if (!favorite) {
-     Favorite.create({
-       user: req.decoded._doc._id,
-       favList: {
-         dish: req.body._id
-       }
-     }, function(err, fav) {
-       if (err) throw err;
-       console.log('Favorite created');
-       res.json(fav);
-     }); 
-    } else {
-      if(favorite.favList.some(function(item) {
-        return item.dish == req.body._id;
-      })) {
-        console.log('dish already in favorite');
-        return res.json({
-          'message': 'this dish already in favorite'
-        });
-      } else {
-        favorite.favList.push({
-          dish: req.body._id
-        });
-        favorite.save(function(err, fav) {
-          if (err) throw err;
-          console.log('Favorite saved');
-          res.json(fav);
-        });
-      }
-    }
-
+    console.log('favorite updated');
+    res.json(favorite);
   });
 })
 
 .delete(function(req, res, next) {
-  Favorite.remove({
-    user: req.decoded._doc._id
+  Favorite.findOneAndRemove({
+    postedBy: req.decoded._doc._id
   }, function(err, resp) {
     if (err) throw err;
     res.json(resp);
@@ -91,19 +60,18 @@ router.route('/:dishObjectId')
 // })
 
 .delete(function(req, res, next) {
-  Favorite.findOne({
-    user: req.decoded._doc._id
+  Favorite.findOneAndUpdate({
+    postedBy: req.decoded._doc._id
+  }, {
+    $pull: {
+      dishes: req.params.dishObjectId
+    }
+  }, {
+    new: true
   }, function(err, favorite) {
-    favorite.favList.forEach(function(item,idx,arr) {
-      if(item.dish == req.params.dishObjectId) {
-        favorite.favList[idx].remove();
-      }
-    })
-    favorite.save(function(err, favorite) {
-      if (err) throw err;
-      console.log('Deleted favorite');
-      res.json(favorite);
-    });
+    if (err) throw err;
+    console.log('Deleted dish: ' + req.param.dishObjectId);
+    res.json(favorite);
   });
 });
 

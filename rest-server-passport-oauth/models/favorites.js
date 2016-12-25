@@ -2,20 +2,15 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var favoriteSchema = new Schema({
-  user: {
+  postedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'
   },
-  favList: [
-    new Schema({
-      dish: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Dish'
-      }
-    }, {
-      timestamps: true
-    })
-  ]
+  dishes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Dish',
+    unique: true
+  }]
 }, {
   timestamps: true
 });
