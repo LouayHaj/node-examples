@@ -15,7 +15,7 @@ router.route('/')
 
 .get(function(req, res, next) {
   Favorite.findOne({
-    postedBy: req.decoded._doc._id
+    postedBy: req.decoded._id
   })
   .populate('postBy dishes')
   .exec(function(err, favorite) {
@@ -28,7 +28,7 @@ router.route('/')
 
 .post(function(req, res, next) {
   Favorite.findOneAndUpdate({
-    postedBy: req.decoded._doc._id
+    postedBy: req.decoded._id
   }, {
     $addToSet: {
       dishes: req.body
@@ -37,7 +37,7 @@ router.route('/')
     upsert: true,
     new: true
   }, function(err, favorite) {
-    if (err) throw err;
+    if (err) return next(err);
     console.log('favorite updated');
     res.json(favorite);
   });
@@ -45,9 +45,9 @@ router.route('/')
 
 .delete(function(req, res, next) {
   Favorite.findOneAndRemove({
-    postedBy: req.decoded._doc._id
+    postedBy: req.decoded._id
   }, function(err, resp) {
-    if (err) throw err;
+    if (err) return next(err);
     res.json(resp);
   });
 });
@@ -61,7 +61,7 @@ router.route('/:dishObjectId')
 
 .delete(function(req, res, next) {
   Favorite.findOneAndUpdate({
-    postedBy: req.decoded._doc._id
+    postedBy: req.decoded._id
   }, {
     $pull: {
       dishes: req.params.dishObjectId
@@ -69,7 +69,7 @@ router.route('/:dishObjectId')
   }, {
     new: true
   }, function(err, favorite) {
-    if (err) throw err;
+    if (err) return next(err);
     console.log('Deleted dish: ' + req.param.dishObjectId);
     res.json(favorite);
   });

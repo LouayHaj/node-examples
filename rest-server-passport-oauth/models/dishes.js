@@ -45,6 +45,10 @@ var dishSchema = new Schema({
     type: mongoose.Types.Currency,
     required: true
   },
+  feature: {
+    type: Boolean,
+    default: false
+  },
   description: {
     type: String,
     required: true

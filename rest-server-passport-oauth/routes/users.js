@@ -10,7 +10,7 @@ var Verify = require('./verify');
 router.get('/', Verify.verifyOrdinaryUser, Verify.verifyAdmin, function(req, res, next) {
   // res.send('respond with a resource');
   User.find({}, function(err, users) {
-    if (err) throw err;
+    if (err) return next(err);
     res.json(users);
   });
 });
@@ -76,7 +76,12 @@ router.post('/login', function(req, res, next) {
       if (err) {
         return res.status(500).json({err: 'Could not log in'});
       }
-      var token = Verify.getToken(user);
+      // var token = Verify.getToken(user);
+      var token = Verify.getToken({
+        "_id": user._id,
+        "username": user.username,
+        "admin": user.admin
+      });
       return res.status(200).json({status: 'Login Success', token: token});
     })
   })(req, res, next);

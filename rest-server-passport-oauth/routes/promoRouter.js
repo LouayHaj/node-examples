@@ -18,10 +18,10 @@ promoRouter.route('/')
 //   next();
 // })
 
-.get(verifyUser, function(req, res, next) {
+.get(function(req, res, next) {
   // res.end('Will send all promotions');
-  Promos.find({}, function(err, promos) {
-    if (err) throw err;
+  Promos.find(req.query, function(err, promos) {
+    if (err) return next(err);
     res.json(promos);
   });
 })
@@ -29,7 +29,7 @@ promoRouter.route('/')
 .post(verifyUser, verifyAdmin, function(req, res, next) {
   // res.end('Add promotion: ' + req.body.name + ' with detail ' + req.body.description);
   Promos.create(req.body, function(err, promo) {
-    if (err) throw err;
+    if (err) return next(err);
     var id = promo._id;
     res.writeHead(200, {
       'ContentType': 'text/plain'
@@ -41,7 +41,7 @@ promoRouter.route('/')
 .delete(verifyUser, verifyAdmin, function(req, res, next) {
   // res.end('Deleting all promotions');
   Promos.remove({}, function(err, resp) {
-    if (err) throw err;
+    if (err) return next(err);
     res.json(resp);
   });
 });
@@ -54,10 +54,10 @@ promoRouter.route('/:id')
 //   next();
 // })
 
-.get(verifyUser, function(req, res, next) {
+.get(function(req, res, next) {
   // res.end('get promotion: ' + req.params.id);
   Promos.findById(req.params.id, function(err, promo) {
-    if (err) throw err;
+    if (err) return next(err);
     res.json(promo);
   });
 })
@@ -70,7 +70,7 @@ promoRouter.route('/:id')
   }, {
     new : true
   }, function(err, promo) {
-    if (err) throw err;
+    if (err) return next(err);
     res.json(promo);
   });
 })
@@ -78,7 +78,7 @@ promoRouter.route('/:id')
 .delete(verifyUser, verifyAdmin, function(req, res, next) {
   // res.end('Deleting promotion ' + req.params.id);
   Promos.findByIdAndRemove(req.params.id, function(err, resp) {
-    if (err) throw err;
+    if (err) return next(err);
     res.json(resp);
   });
 });

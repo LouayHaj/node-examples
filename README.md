@@ -1400,3 +1400,69 @@ Other Resources
 - [HOW TO     CHOOSE THE RIGHT BACKEND AS A SERVICE (BAAS) PLATFORM](http://waracle.net/how-to-choose-the-right-backend-as-a-service-baas-platform/)
 - [Let     LoopBack Do It: A Walkthrough of the Node API Framework You've Been     Dreaming Of](https://www.toptal.com/nodejs/let-loopback-do-it-a-walkthrough-of-the-node-api-framework-you-ve-been-dreaming-of)
 
+
+
+
+## Ex.14 Integrating with Client side
+
+### 1.add feature field to dishes, promotions, leadership model
+
+```javascript
+  ...
+feature: {
+	type: Boolean,
+    default: false
+},
+  ...
+```
+
+This helps figure out the dish, promotion and leadership display on first page
+
+
+
+### 2.adjustment on router files
+
+- find method handles http GET with query string feature=true
+- next(err) instead of throw err
+- all GET router don't need authentication user now
+
+```javascript
+.get(function (req, res, next) {
+    Dishes.find(req.query)
+        .populate('comments.postedBy')
+        .exec(function (err, dish) {
+        if (err) next(err);
+        res.json(dish);
+    });
+})
+```
+
+```javascript
+if (err) return next(err);
+```
+
+
+
+### 3.Verify and token
+
+- Token shrink now, only contains _id, username, admin properties instead of all user infos
+- verify check adjust to req.decoded._id/username/admin
+
+```javascript
+var token = Verify.getToken({
+  "username":user.username,
+  "_id":user._id,
+  "admin":user.admin
+})
+```
+
+```javascript
+// verify.js
+
+//verifyAdmin
+  // if (req.decoded._doc.admin) {
+  if (req.decoded.admin)
+    return next();
+
+```
+

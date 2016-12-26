@@ -31,7 +31,7 @@ exports.verifyOrdinaryUser = function(req, res, next) {
 
 exports.verifyAdmin = function(req, res, next) {
   // console.log(req.decoded);
-  if (req.decoded._doc.admin) {
+  if (req.decoded.admin) {
     return next();
   } else {
     var err = new Error('You are not authorized to perform this operation!');
