@@ -8,7 +8,8 @@
   },
   "devDependencies": {
     "cz-conventional-changelog": "^1.2.0",
-    "ghooks": "^1.3.2"
+    "ghooks": "^1.3.2",
+    "semver-regex": "^1.0.0"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
