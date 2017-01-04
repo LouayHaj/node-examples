@@ -5,6 +5,9 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+// CORS
+var cors = require('cors');
+
 // routes
 var index = require('./routes/index');
 var users = require('./routes/users');
@@ -33,21 +36,27 @@ db.once('open', function() {
 
 var app = express();
 
-app.all('*', function(req, res, next) {
-  /**
-   * Allow CORS and custom header
-   */
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Request-With, customHeaders');
-  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')
+// app.all('*', function(req, res, next) {
+//   /**
+//    * Allow CORS and custom header
+//    */
+//   res.header('Access-Control-Allow-Origin', '*');
+//   res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Request-With, customHeaders');
+//   res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS');
   
-  /**
-   * OPTIONS quick response
-   */
-  if (req.method === 'OPTIONS') {
-    res.send(200);
-  }
+//   /**
+//    * OPTIONS quick response
+//    */
+//   if (req.method == 'OPTIONS') {
 
+//     res.sendStatus(200);
+//   } else {
+//     next();
+//   }
+// });
+app.use(cors());
+
+app.all('*', function(req, res, next) {
   /**
    * Forcing HTTPS 
    */
@@ -69,6 +78,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
 
 // passport config
 // var User = require('./models/user.js');
