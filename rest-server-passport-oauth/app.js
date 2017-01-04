@@ -34,6 +34,23 @@ db.once('open', function() {
 var app = express();
 
 app.all('*', function(req, res, next) {
+  /**
+   * Allow CORS and custom header
+   */
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Content-Length, Authorization, Accept, X-Request-With, customHeaders');
+  res.header('Access-Control-Allow-Methods', 'PUT, POST, GET, DELETE, OPTIONS')
+  
+  /**
+   * OPTIONS quick response
+   */
+  if (req.method === 'OPTIONS') {
+    res.send(200);
+  }
+
+  /**
+   * Forcing HTTPS 
+   */
   if (req.secure) {
     next();
   } else {
