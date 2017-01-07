@@ -32,6 +32,8 @@ if (args[0] === 'code') {
 if (args[0] === 'decode') {
   var buffer = new Buffer(args[1], 'base64');
   var decoded = buffer.toString();
+  console.log(decoded);
+  return 0;
 }
 
 function printHelp() {
