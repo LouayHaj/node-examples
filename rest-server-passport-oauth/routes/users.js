@@ -36,6 +36,7 @@ router.get('/facebook/callback', function(req, res, next) {
       res.status(200).json({
         status:'Login Success',
         success: true,
+	userId: user._id,
         token: token
       });
     });
@@ -82,7 +83,7 @@ router.post('/login', function(req, res, next) {
         "username": user.username,
         "admin": user.admin
       });
-      return res.status(200).json({status: 'Login Success', token: token});
+      return res.status(200).json({status: 'Login Success', userId: user._id, token: token});
     })
   })(req, res, next);
 });
