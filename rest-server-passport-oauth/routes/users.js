@@ -88,6 +88,15 @@ router.post('/login', function(req, res, next) {
   })(req, res, next);
 });
 
+// verify user token
+router.get('/login', Verify.verifyOrdinaryUser, function(req, res, next) {
+  if (req.decoded) {
+    return res.status(200).json({status: 'token verified'});
+  } else {
+    return res.status(401).json({status: 'token incorrect'});
+  }
+});
+
 router.get('/logout', function(req, res, next) {
   req.logout();
   res.status(200).json({status:'bye'});
