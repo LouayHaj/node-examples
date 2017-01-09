@@ -14,8 +14,19 @@ exports.verifyOrdinaryUser = function(req, res, next) {
     // decode token
     jwt.verify(token, config.sercetKey, function(err, decoded) {
       if (err) {
-        var err = new Error('Not Authenticated');
-        err.status = 401;
+        // var err = new Error('Not Authenticated');
+        // err.status = 401;
+	/**
+	 * err = {
+	 *   name: 'TokenExpiredError',
+	 *   message: 'jwt expired',
+	 *   expiredAt: 1408621000
+	 * }
+	 * err = {
+	 *   name: 'JsonWebTokenError',
+	 *   message: 'jwt malformed'
+	 * }
+	 */
         return next(err);
       }
       req.decoded = decoded;
